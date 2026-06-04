@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CardioML — Heart Disease Classification</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+:root{--navy:#0a1628;--navy2:#112240;--teal:#06b6d4;--teal2:#0891b2;--red:#ef4444;--red2:#dc2626;--green:#22c55e;--green2:#16a34a;--amber:#f59e0b;--purple:#8b5cf6;--gray50:#f8fafc;--gray100:#f1f5f9;--gray200:#e2e8f0;--gray300:#cbd5e1;--gray400:#94a3b8;--gray500:#64748b;--gray600:#475569;--gray700:#334155;--gray800:#1e293b;--gray900:#0f172a;--white:#ffffff;--font:"Inter",sans-serif;--mono:"JetBrains Mono",monospace;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.08);--shadow-lg:0 8px 40px rgba(0,0,0,.12)}
+body{font-family:var(--font);background:var(--gray50);color:var(--gray800);font-size:15px;line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:var(--gray300);border-radius:3px}
+nav{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--gray200);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:var(--navy);text-decoration:none;letter-spacing:-.02em}
+.brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--red),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-size:13px;font-weight:500;color:var(--gray500);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--navy)}
+.nav-cta{background:var(--navy);color:white;font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;text-decoration:none}
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 50%,#1a1040 100%);padding:5rem 2rem 4rem;position:relative;overflow:hidden;min-height:520px;display:flex;align-items:center}
+.hero-bg{position:absolute;inset:0;overflow:hidden}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(60px)}
+.orb1{width:400px;height:400px;background:rgba(6,182,212,.12);top:-100px;right:-50px}
+.orb2{width:300px;height:300px;background:rgba(139,92,246,.1);bottom:-50px;left:20%}
+.orb3{width:200px;height:200px;background:rgba(239,68,68,.08);top:30%;right:25%}
+.hero-inner{max-width:960px;margin:0 auto;position:relative;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.4);letter-spacing:.12em;text-transform:uppercase;margin-bottom:1.25rem;background:rgba(255,255,255,.06);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.08)}
+.hero-tag span{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(2rem,4vw,3rem);font-weight:700;color:white;line-height:1.15;letter-spacing:-.03em;margin-bottom:1.25rem}
+h1 .accent{background:linear-gradient(90deg,var(--teal),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:.95rem;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:2rem}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{background:linear-gradient(135deg,var(--teal),var(--purple));color:white;font-weight:600;font-size:14px;padding:12px 24px;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:opacity .2s,transform .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);font-weight:500;font-size:14px;padding:12px 24px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,.12);cursor:pointer;transition:background .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-ghost:hover{background:rgba(255,255,255,.14)}
+.hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.5rem;backdrop-filter:blur(8px)}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.hstat{background:rgba(255,255,255,.04);padding:1rem;text-align:center}
+.hstat .n{font-family:var(--mono);font-size:1.6rem;font-weight:500;color:white;display:block;line-height:1}
+.hstat .l{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em;margin-top:5px;display:block}
+.model-pills{display:flex;gap:6px;flex-wrap:wrap}
+.mpill{font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:20px;font-weight:500}
+.mpill.best{background:rgba(6,182,212,.2);color:var(--teal);border:1px solid rgba(6,182,212,.3)}
+.mpill.ok{background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)}
+section{padding:4rem 2rem}
+.inner{max-width:960px;margin:0 auto}
+.sec-eyebrow{font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--teal);font-weight:500;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.sec-eyebrow::after{content:"";flex:1;max-width:30px;height:1px;background:var(--teal);opacity:.4}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:var(--navy);margin-bottom:.75rem;letter-spacing:-.02em}
+.sec-lead{color:var(--gray500);max-width:680px;margin-bottom:2.5rem;font-size:.94rem}
+.scards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.scard{background:white;border:1px solid var(--gray200);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow)}
+.scard .ic{font-size:1.5rem;margin-bottom:.75rem}
+.scard .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray400);font-family:var(--mono);margin-bottom:.4rem}
+.scard .val{font-family:var(--mono);font-size:1.8rem;font-weight:500;color:var(--navy);line-height:1}
+.scard .sub{font-size:12px;color:var(--gray400);margin-top:4px}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+@media(max-width:640px){.chart-row{grid-template-columns:1fr}}
+.ccrd{background:white;border:1px solid var(--gray200);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow)}
+.ctitle{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:.2rem}
+.csub{font-size:12px;color:var(--gray400);margin-bottom:1rem}
+.legend{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gray500)}
+.lsq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:0;background:white;border:1px solid var(--gray200);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:2rem}
+.ps{padding:1rem .75rem;text-align:center;border-right:1px solid var(--gray100)}
+.ps:last-child{border-right:none}
+.ps:hover{background:var(--gray50)}
+.ps-num{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray400);display:block;margin-bottom:6px}
+.ps-icon{font-size:1.25rem;display:block;margin-bottom:6px}
+.ps-name{font-size:12px;font-weight:600;color:var(--navy);display:block;margin-bottom:3px}
+.ps-detail{font-size:10px;color:var(--gray400);line-height:1.4}
+.model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+@media(max-width:640px){.model-grid{grid-template-columns:1fr}}
+.mcrd{background:white;border:2px solid var(--gray200);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.mcrd:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.mcrd.best{border-color:var(--teal)}
+.mhdr{padding:1rem 1.1rem;border-bottom:1px solid var(--gray100);display:flex;justify-content:space-between;align-items:flex-start}
+.mname{font-size:13px;font-weight:600;color:var(--navy)}
+.mrole{font-size:11px;color:var(--gray400);margin-top:2px}
+.mbadge{font-size:10px;font-family:var(--mono);background:var(--teal);color:white;padding:3px 8px;border-radius:20px;font-weight:500}
+.mmetrics{padding:1rem 1.1rem}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray50);font-size:12px}
+.mrow:last-of-type{border-bottom:none}
+.mlbl{color:var(--gray500)}
+.mval{font-family:var(--mono);font-weight:500;color:var(--navy)}
+.mval.hi{color:var(--teal)}
+.mbar{height:3px;background:var(--gray100);border-radius:2px;margin-top:10px;overflow:hidden}
+.mbfill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--purple))}
+.cm-wrap{background:white;border:1px solid var(--gray200);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);display:inline-block}
+.cm{display:inline-grid;grid-template-columns:80px 1fr 1fr;grid-template-rows:auto 1fr 1fr;gap:3px}
+.cmh{font-size:11px;color:var(--gray400);font-family:var(--mono);text-align:center;padding:6px;display:flex;align-items:center;justify-content:center;font-weight:500}
+.cmrl{font-size:11px;color:var(--gray400);font-family:var(--mono);text-align:right;padding:6px 10px;display:flex;align-items:center;justify-content:flex-end;font-weight:500}
+.cmcell{padding:1rem;text-align:center;border-radius:8px;min-width:95px}
+.cmcell .cn{font-family:var(--mono);font-size:2rem;font-weight:700;display:block;line-height:1}
+.cmcell .cl{font-size:10px;margin-top:5px;display:block;line-height:1.4;font-weight:500}
+.tn{background:#f0fdf4}.tn .cn{color:#16a34a}.tn .cl{color:#166534}
+.fp{background:#fefce8}.fp .cn{color:#f59e0b}.fp .cl{color:#92400e}
+.fn{background:#fef2f2}.fn .cn{color:#dc2626}.fn .cl{color:#991b1b}
+.tp{background:#f0fdf4}.tp .cn{color:#16a34a}.tp .cl{color:#166534}
+.fbars{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
+@media(max-width:640px){.fbars{grid-template-columns:1fr}}
+.fitem{padding:10px 0;border-bottom:1px solid var(--gray100)}
+.fitem:last-child{border-bottom:none}
+.ftop{display:flex;align-items:center;gap:10px}
+.frank{font-family:var(--mono);font-size:11px;color:var(--gray400);width:20px;flex-shrink:0}
+.fname{font-family:var(--mono);font-size:12px;color:var(--navy);font-weight:600;min-width:88px}
+.fbarw{flex:1;height:5px;background:var(--gray100);border-radius:3px;overflow:hidden}
+.fbarfill{height:100%;border-radius:3px}
+.fpct{font-family:var(--mono);font-size:11px;color:var(--gray500);min-width:36px;text-align:right}
+.fdesc{font-size:11px;color:var(--gray400);line-height:1.5;margin-top:4px;padding-left:30px}
+.callout{background:white;border:1px solid var(--gray200);border-left:3px solid var(--teal);border-radius:0 var(--radius) var(--radius) 0;padding:1rem 1.25rem;margin:1.5rem 0;font-size:13px;color:var(--gray600);box-shadow:var(--shadow)}
+.callout.warn{border-left-color:var(--amber)}
+.callout.danger{border-left-color:var(--red)}
+.callout.success{border-left-color:var(--green)}
+.callout strong{color:var(--navy)}
+#calculator{background:var(--navy);padding:5rem 2rem}
+#calculator h2{color:white}
+#calculator .sec-lead{color:rgba(255,255,255,.5)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:640px){.calc-grid{grid-template-columns:1fr}}
+.calc-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:1.5rem}
+.calc-section-title{font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.4);margin-bottom:1rem;font-weight:500}
+.form-group{margin-bottom:1rem}
+.form-label{font-size:12px;font-weight:500;color:rgba(255,255,255,.6);display:block;margin-bottom:6px}
+.form-control{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 12px;color:white;font-size:13px;font-family:var(--font);outline:none;transition:border-color .2s;appearance:none}
+.form-control:focus{border-color:var(--teal)}
+.form-control option{background:#112240;color:white}
+.form-range{width:100%;accent-color:var(--teal);cursor:pointer;margin:4px 0}
+.range-labels{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.3);font-family:var(--mono);margin-top:2px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:13px;color:rgba(255,255,255,.65)}
+.toggle{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.15);border-radius:11px;cursor:pointer;transition:.3s}
+.toggle-slider::before{content:"";position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s}
+input:checked+.toggle-slider{background:var(--teal)}
+input:checked+.toggle-slider::before{transform:translateX(18px)}
+.calc-result{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:1.5rem;text-align:center;margin-top:1.5rem}
+.result-label{font-size:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:.75rem}
+.result-gauge{position:relative;width:140px;height:140px;margin:0 auto 1rem}
+.gauge-svg{width:140px;height:140px;transform:rotate(-90deg)}
+.gauge-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:12}
+.gauge-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .8s ease,stroke .4s}
+.result-pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.result-num{font-family:var(--mono);font-size:2rem;font-weight:700;color:white;line-height:1}
+.result-unit{font-size:11px;color:rgba(255,255,255,.4)}
+.result-risk{font-size:14px;font-weight:600;margin-bottom:.5rem}
+.result-msg{font-size:12px;color:rgba(255,255,255,.45);line-height:1.6}
+.calc-btn{width:100%;background:linear-gradient(135deg,var(--teal),var(--purple));color:white;font-size:14px;font-weight:600;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:1rem;transition:opacity .2s,transform .2s;font-family:var(--font)}
+.calc-btn:hover{opacity:.9;transform:translateY(-1px)}
+.disclaimer{font-size:11px;color:rgba(255,255,255,.25);text-align:center;margin-top:1rem;line-height:1.6}
+.tscroll{overflow-x:auto;margin-bottom:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px;background:white}
+th{background:var(--navy);color:white;padding:10px 14px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+td{padding:10px 14px;border-bottom:1px solid var(--gray100);color:var(--gray700);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gray50)}
+.tmono{font-family:var(--mono);color:var(--teal2);font-weight:500}
+.tbadge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-family:var(--mono);font-weight:500}
+.cont{background:#e0f2fe;color:#075985}.cat{background:#fce7f3;color:#9d174d}.bin{background:#f0fdf4;color:#166534}.ord{background:#fef3c7;color:#92400e}.tgt{background:var(--navy);color:white}
+.ethics-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:640px){.ethics-grid{grid-template-columns:1fr}}
+.ecrd{background:white;border:1px solid var(--gray200);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);transition:transform .2s}
+.ecrd:hover{transform:translateY(-2px)}
+.eicon{font-size:1.5rem;margin-bottom:.75rem;display:block}
+.etitle{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.ebody{font-size:13px;color:var(--gray500);line-height:1.65}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+@media(max-width:640px){.tgrid{grid-template-columns:1fr 1fr}}
+.tcrd{background:white;border:1px solid var(--gray200);border-radius:var(--radius);padding:1.5rem 1rem;text-align:center;box-shadow:var(--shadow)}
+.tavatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;margin:0 auto 12px;color:white}
+.tname{font-size:14px;font-weight:600;color:var(--navy)}
+.trole{font-size:12px;color:var(--gray400);margin-top:4px}
+footer{background:var(--gray900);color:rgba(255,255,255,.4);padding:3rem 2rem;text-align:center;font-size:13px;line-height:2}
+footer strong{color:rgba(255,255,255,.7)}footer a{color:rgba(255,255,255,.5);text-decoration:none}footer a:hover{color:white}
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+.bg-white{background:white}.bg-gray{background:var(--gray50)}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--gray200),transparent);margin:0 2rem}
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="#"><div class="brand-icon">&#10084;</div>CardioML</a>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#dataset">Dataset</a></li>
+    <li><a href="#methodology">Method</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#calculator">Risk Tool</a></li>
+    <li><a href="#ethics">Ethics</a></li>
+  </ul>
+  <a href="#calculator" class="nav-cta">Try Risk Tool &rarr;</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"><div class="hero-orb orb1"></div><div class="hero-orb orb2"></div><div class="hero-orb orb3"></div></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag"><span></span> Machine Learning &middot; Binary Classification</div>
+      <h1>Predicting <span class="accent">heart disease</span><br>from lifestyle data</h1>
+      <p class="hero-sub">We sampled 2,059 patients from 319,795 real CDC survey responses &mdash; preserving the true 8.6% disease rate &mdash; and built three ML classifiers with GridSearchCV and <code style="font-family:var(--mono);background:rgba(255,255,255,.1);padding:2px 6px;border-radius:4px;font-size:13px">class_weight=balanced</code>.</p>
+      <div class="hero-btns">
+        <a href="#calculator" class="btn-primary">&#129704; Try Risk Calculator</a>
+        <a href="#results" class="btn-ghost">&#128202; View Results</a>
+      </div>
+    </div>
+    <div>
+      <div class="hero-card">
+        <div class="hero-stats">
+          <div class="hstat"><span class="n">2,059</span><span class="l">Patients</span></div>
+          <div class="hstat"><span class="n">8.6%</span><span class="l">Real disease rate</span></div>
+          <div class="hstat"><span class="n">82.3%</span><span class="l">Best accuracy</span></div>
+          <div class="hstat"><span class="n">0.855</span><span class="l">AUC-ROC</span></div>
+        </div>
+        <div style="margin-bottom:.75rem;font-size:11px;color:rgba(255,255,255,.3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Models trained</div>
+        <div class="model-pills">
+          <span class="mpill ok">Logistic Reg.</span>
+          <span class="mpill best">Random Forest &#9733;</span>
+          <span class="mpill ok">SVM (RBF)</span>
+        </div>
+        <div style="margin-top:.75rem;font-size:11px;color:rgba(255,255,255,.3);font-family:var(--mono)">Source: CDC BRFSS 2020 &middot; Kamilpytlak (2021)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="overview" class="bg-white">
+<div class="inner">
+  <div class="sec-eyebrow">Background</div>
+  <h2>Why this matters</h2>
+  <p class="sec-lead">Heart disease kills 17.9 million people per year &mdash; 31% of all global deaths. Most patients are not identified as high risk until after a serious cardiac event. This project asks: can routine self-reported lifestyle data identify high-risk individuals before that happens?</p>
+  <div class="scards">
+    <div class="scard"><div class="ic">&#127758;</div><div class="lbl">Global deaths/year</div><div class="val">17.9M</div><div class="sub">Cardiovascular disease &mdash; WHO 2023</div></div>
+    <div class="scard"><div class="ic">&#127963;</div><div class="lbl">Data source</div><div class="val">CDC</div><div class="sub">BRFSS 2020 &mdash; 319,795 US responses</div></div>
+    <div class="scard"><div class="ic">&#128101;</div><div class="lbl">Our sample</div><div class="val">2,059</div><div class="sub">At real 8.6% disease rate</div></div>
+    <div class="scard"><div class="ic">&#127919;</div><div class="lbl">Task type</div><div class="val">Binary</div><div class="sub">0 = No disease &middot; 1 = Has disease</div></div>
+  </div>
+  <div class="callout success"><strong>What is binary classification?</strong> The model reads 17 numbers about a patient and outputs one answer: does this person have heart disease or not? It learns the pattern from 2,059 labelled examples where the actual diagnosis is already known.</div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<section id="dataset" class="bg-gray">
+<div class="inner">
+  <div class="sec-eyebrow">Dataset</div>
+  <h2>The patient data</h2>
+  <p class="sec-lead">CDC BRFSS 2020 is the largest US health survey &mdash; 319,795 responses, 17 health features, completely self-reported. We sampled 2,059 patients at the real disease rate. No missing values.</p>
+  <div class="chart-row">
+    <div class="ccrd"><div class="ctitle">Class distribution &mdash; real CDC rate</div><div class="csub">8.6% disease rate reflects true US population prevalence. We kept this real imbalance.</div><div class="legend"><span class="li"><span class="lsq" style="background:#22c55e"></span>No Disease (1,882)</span><span class="li"><span class="lsq" style="background:#ef4444"></span>Heart Disease (177)</span></div><div style="height:200px"><canvas id="distChart"></canvas></div></div>
+    <div class="ccrd"><div class="ctitle">Disease rate by age group</div><div class="csub">Risk rises sharply after 50 &mdash; age is the #1 predictor (28.7% importance)</div><div class="legend"><span class="li"><span class="lsq" style="background:#ef4444"></span>Disease rate (%)</span></div><div style="height:200px"><canvas id="ageChart"></canvas></div></div>
+  </div>
+  <div class="chart-row">
+    <div class="ccrd"><div class="ctitle">General health vs disease rate</div><div class="csub">Poor self-rated health is a powerful composite disease predictor (13.4% importance)</div><div class="legend"><span class="li"><span class="lsq" style="background:#ef4444"></span>Disease rate (%)</span></div><div style="height:200px"><canvas id="ghChart"></canvas></div></div>
+    <div class="ccrd"><div class="ctitle">Disease rate by key risk factors</div><div class="csub">Stroke and diabetes dramatically increase heart disease risk</div><div class="legend"><span class="li"><span class="lsq" style="background:#ef4444"></span>Has disease</span><span class="li"><span class="lsq" style="background:#22c55e"></span>No disease</span></div><div style="height:200px"><canvas id="riskChart"></canvas></div></div>
+  </div>
+  <h3 style="font-size:16px;font-weight:600;color:var(--navy);margin-bottom:1rem">All 17 features</h3>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Feature</th><th>What it measures</th><th>Type</th><th>Encoding</th></tr></thead>
+      <tbody>
+        <tr><td class="tmono">BMI</td><td>Body mass index</td><td><span class="tbadge cont">Continuous</span></td><td>As-is</td></tr>
+        <tr><td class="tmono">AgeCategory</td><td>Age band: 18&ndash;24 up to 80+</td><td><span class="tbadge ord">Ordinal</span></td><td>0 &rarr; 12</td></tr>
+        <tr><td class="tmono">GenHealth</td><td>Self-reported health: Poor &rarr; Excellent</td><td><span class="tbadge ord">Ordinal</span></td><td>0 &rarr; 4</td></tr>
+        <tr><td class="tmono">Diabetic</td><td>Diabetes status: No / Borderline / Yes</td><td><span class="tbadge ord">Ordinal</span></td><td>0 &rarr; 2</td></tr>
+        <tr><td class="tmono">PhysicalHealth</td><td>Days of poor physical health (last 30)</td><td><span class="tbadge cont">Continuous</span></td><td>As-is</td></tr>
+        <tr><td class="tmono">MentalHealth</td><td>Days of poor mental health (last 30)</td><td><span class="tbadge cont">Continuous</span></td><td>As-is</td></tr>
+        <tr><td class="tmono">SleepTime</td><td>Average hours of sleep per 24 hours</td><td><span class="tbadge cont">Continuous</span></td><td>As-is</td></tr>
+        <tr><td class="tmono">Sex</td><td>Male or Female</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">Smoking</td><td>Smoked &ge; 100 cigarettes lifetime</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">AlcoholDrinking</td><td>Heavy drinker (&gt;14/wk male, &gt;7/wk female)</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">Stroke</td><td>Ever had a stroke</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">DiffWalking</td><td>Difficulty walking or climbing stairs</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">PhysicalActivity</td><td>Exercise in past 30 days outside work</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">Asthma</td><td>Ever had asthma</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">KidneyDisease</td><td>Ever had kidney disease</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">SkinCancer</td><td>Ever had skin cancer</td><td><span class="tbadge bin">Binary</span></td><td>0/1</td></tr>
+        <tr><td class="tmono">Race</td><td>White/Black/Asian/Hispanic/American Indian/Other</td><td><span class="tbadge cat">Nominal</span></td><td>One-hot</td></tr>
+        <tr style="background:#f0f9ff"><td class="tmono"><strong>HeartDisease</strong></td><td><strong>Ever diagnosed with CHD or MI &mdash; TARGET</strong></td><td><span class="tbadge tgt">Target</span></td><td>0/1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<section id="methodology" class="bg-white">
+<div class="inner">
+  <div class="sec-eyebrow">Methodology</div>
+  <h2>How we built the models</h2>
+  <p class="sec-lead">A complete ML pipeline &mdash; real CDC data, encoding, scaling, GridSearchCV tuning, and rigorous evaluation on a held-out test set.</p>
+  <div class="pipeline">
+    <div class="ps"><span class="ps-num">01</span><span class="ps-icon">&#128229;</span><span class="ps-name">Sample</span><span class="ps-detail">2,059 at real 8.6% disease rate</span></div>
+    <div class="ps"><span class="ps-num">02</span><span class="ps-icon">&#128269;</span><span class="ps-name">EDA</span><span class="ps-detail">Charts &middot; stats &middot; 0 missing</span></div>
+    <div class="ps"><span class="ps-num">03</span><span class="ps-icon">&#128288;</span><span class="ps-name">Encode</span><span class="ps-detail">Ordinal &middot; binary &middot; one-hot</span></div>
+    <div class="ps"><span class="ps-num">04</span><span class="ps-icon">&#9986;</span><span class="ps-name">Split 80/20</span><span class="ps-detail">1,647 train &middot; 412 test</span></div>
+    <div class="ps"><span class="ps-num">05</span><span class="ps-icon">&#9878;</span><span class="ps-name">Scale</span><span class="ps-detail">StandardScaler (train only)</span></div>
+    <div class="ps"><span class="ps-num">06</span><span class="ps-icon">&#127919;</span><span class="ps-name">GridSearch</span><span class="ps-detail">F1 &middot; 5-fold &middot; balanced</span></div>
+  </div>
+  <div class="callout"><strong>Why class_weight='balanced'?</strong> With 91.4% no disease, a model predicting "no disease" for everyone gets 91.4% accuracy &mdash; while being completely useless. class_weight=balanced forces the algorithm to weight disease patients proportionally higher.</div>
+  <div class="callout warn" style="margin-top:.75rem"><strong>Why keep the imbalance instead of forcing 50/50?</strong> A forced 50/50 split misrepresents reality. Preserving the real 8.6% rate and handling it with class_weight is the academically correct approach for imbalanced medical classification.</div>
+  <div class="callout" style="margin-top:.75rem"><strong>No data leakage:</strong> StandardScaler is fitted on training data ONLY. The same parameters are then applied to the test set. Fitting on all data first produces falsely optimistic results.</div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<section id="results" class="bg-gray">
+<div class="inner">
+  <div class="sec-eyebrow">Results</div>
+  <h2>Model performance</h2>
+  <p class="sec-lead">All three models classify heart disease above chance. Random Forest achieves the best AUC-ROC (0.855). Logistic Regression achieves the highest disease recall (80%).</p>
+  <div class="model-grid">
+    <div class="mcrd">
+      <div class="mhdr"><div><div class="mname">Logistic Regression</div><div class="mrole">Interpretable baseline &middot; C = 0.01</div></div></div>
+      <div class="mmetrics">
+        <div class="mrow"><span class="mlbl">Test accuracy</span><span class="mval">76.5%</span></div>
+        <div class="mrow"><span class="mlbl">Disease recall &#9733;</span><span class="mval">80.0%</span></div>
+        <div class="mrow"><span class="mlbl">AUC-ROC</span><span class="mval">0.849</span></div>
+        <div class="mrow"><span class="mlbl">CV accuracy</span><span class="mval">77.5% &plusmn;1.3%</span></div>
+        <div class="mbar"><div class="mbfill" style="width:76.5%"></div></div>
+      </div>
+    </div>
+    <div class="mcrd best">
+      <div class="mhdr"><div><div class="mname">Random Forest</div><div class="mrole">depth=5 &middot; n=100 &middot; split=10</div></div><span class="mbadge">Best AUC</span></div>
+      <div class="mmetrics">
+        <div class="mrow"><span class="mlbl">Test accuracy</span><span class="mval hi">82.3%</span></div>
+        <div class="mrow"><span class="mlbl">Disease recall</span><span class="mval hi">74.3%</span></div>
+        <div class="mrow"><span class="mlbl">AUC-ROC</span><span class="mval hi">0.855 &#9733;</span></div>
+        <div class="mrow"><span class="mlbl">CV accuracy</span><span class="mval hi">82.6% &plusmn;1.6%</span></div>
+        <div class="mbar"><div class="mbfill" style="width:82.3%"></div></div>
+      </div>
+    </div>
+    <div class="mcrd">
+      <div class="mhdr"><div><div class="mname">SVM (RBF kernel)</div><div class="mrole">C = 0.1 &middot; &gamma; = 0.001</div></div></div>
+      <div class="mmetrics">
+        <div class="mrow"><span class="mlbl">Test accuracy</span><span class="mval">84.2%</span></div>
+        <div class="mrow"><span class="mlbl">Disease recall</span><span class="mval" style="color:var(--red)">54.3% &#9888;</span></div>
+        <div class="mrow"><span class="mlbl">AUC-ROC</span><span class="mval">0.828</span></div>
+        <div class="mrow"><span class="mlbl">CV accuracy</span><span class="mval">86.9% &plusmn;2.0%</span></div>
+        <div class="mbar"><div class="mbfill" style="width:84.2%"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="callout danger"><strong>Why SVM has 84% accuracy but only 54% recall:</strong> SVM predicts &ldquo;no disease&rdquo; for borderline cases to exploit the 91.4% majority &mdash; even with class_weight=balanced. High accuracy here is misleading. AUC and recall tell the real story. This is why we report 5 metrics, not just accuracy.</div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:2rem;align-items:start;margin-top:2rem">
+    <div>
+      <h3 style="font-size:16px;font-weight:600;color:var(--navy);margin-bottom:.5rem">Confusion matrix</h3>
+      <p style="font-size:13px;color:var(--gray400);margin-bottom:1rem">Random Forest &middot; 412 test patients</p>
+      <div class="cm-wrap">
+        <div class="cm">
+          <div class="cmh"></div><div class="cmh">Pred: No Disease</div><div class="cmh">Pred: Disease</div>
+          <div class="cmrl">Actual:<br>No Disease</div>
+          <div class="cmcell tn"><span class="cn">313</span><span class="cl">&#9989; True Negative<br>Correctly healthy</span></div>
+          <div class="cmcell fp"><span class="cn">64</span><span class="cl">&#9888; False Positive<br>Unnecessary alarm</span></div>
+          <div class="cmrl">Actual:<br>Disease</div>
+          <div class="cmcell fn"><span class="cn">9</span><span class="cl">&#128680; False Negative<br>Missed!</span></div>
+          <div class="cmcell tp"><span class="cn">26</span><span class="cl">&#9989; True Positive<br>Caught disease</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:16px;font-weight:600;color:var(--navy);margin-bottom:.5rem">AUC-ROC scores</h3>
+      <p style="font-size:13px;color:var(--gray400);margin-bottom:1rem">AUC: 0.5 = random, &gt;0.8 = good, 1.0 = perfect</p>
+      <div class="ccrd" style="margin:0"><div style="height:140px"><canvas id="aucChart"></canvas></div></div>
+    </div>
+  </div>
+  <h3 style="font-size:16px;font-weight:600;color:var(--navy);margin:2.5rem 0 .5rem">Feature importance (Random Forest)</h3>
+  <p style="font-size:13px;color:var(--gray400);margin-bottom:1.5rem">Gini importance &mdash; how much each feature reduces prediction error. Red = top 5.</p>
+  <div class="fbars">
+    <div>
+      <div class="fitem"><div class="ftop"><span class="frank">#1</span><span class="fname">AgeCategory</span><div class="fbarw"><div class="fbarfill" style="width:100%;background:linear-gradient(90deg,#ef4444,#dc2626)"></div></div><span class="fpct">28.7%</span></div><div class="fdesc">Dominant predictor &mdash; disease risk rises sharply after 50.</div></div>
+      <div class="fitem"><div class="ftop"><span class="frank">#2</span><span class="fname">GenHealth</span><div class="fbarw"><div class="fbarfill" style="width:46.7%;background:linear-gradient(90deg,#ef4444,#f97316)"></div></div><span class="fpct">13.4%</span></div><div class="fdesc">Self-reported health captures overall comorbidity burden.</div></div>
+      <div class="fitem"><div class="ftop"><span class="frank">#3</span><span class="fname">DiffWalking</span><div class="fbarw"><div class="fbarfill" style="width:34.7%;background:linear-gradient(90deg,#ef4444,#f97316)"></div></div><span class="fpct">10.0%</span></div><div class="fdesc">Difficulty walking may indicate pre-existing cardiac limitation.</div></div>
+    </div>
+    <div>
+      <div class="fitem"><div class="ftop"><span class="frank">#4</span><span class="fname">PhysicalHealth</span><div class="fbarw"><div class="fbarfill" style="width:30.1%;background:#f97316"></div></div><span class="fpct">8.6%</span></div><div class="fdesc">More poor physical health days correlates with chronic illness burden.</div></div>
+      <div class="fitem"><div class="ftop"><span class="frank">#5</span><span class="fname">Diabetic</span><div class="fbarw"><div class="fbarfill" style="width:28.6%;background:#f97316"></div></div><span class="fpct">8.2%</span></div><div class="fdesc">Diabetes drives arterial damage &mdash; independent cardiovascular risk factor.</div></div>
+      <div class="fitem"><div class="ftop"><span class="frank">#6</span><span class="fname">BMI</span><div class="fbarw"><div class="fbarfill" style="width:18.8%;background:#06b6d4"></div></div><span class="fpct">5.4%</span></div><div class="fdesc">Higher BMI associated with hypertension and metabolic risk.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<section id="calculator">
+<div class="inner">
+  <div class="sec-eyebrow" style="color:var(--teal)">Interactive Tool</div>
+  <h2>Personal Risk Calculator</h2>
+  <p class="sec-lead">Enter your information below. Our model estimates your heart disease risk based on CDC population patterns. <strong style="color:rgba(255,255,255,.5)">Educational purposes only &mdash; not a medical diagnosis.</strong></p>
+  <div class="calc-grid">
+    <div>
+      <div class="calc-card">
+        <div class="calc-section-title">&#128203; Basic Information</div>
+        <div class="form-group">
+          <label class="form-label">Age Group</label>
+          <select class="form-control" id="c-age" onchange="updateRisk()">
+            <option value="0">18 &ndash; 24</option><option value="1">25 &ndash; 29</option><option value="2">30 &ndash; 34</option>
+            <option value="3">35 &ndash; 39</option><option value="4">40 &ndash; 44</option><option value="5">45 &ndash; 49</option>
+            <option value="6" selected>50 &ndash; 54</option><option value="7">55 &ndash; 59</option><option value="8">60 &ndash; 64</option>
+            <option value="9">65 &ndash; 69</option><option value="10">70 &ndash; 74</option><option value="11">75 &ndash; 79</option>
+            <option value="12">80 or older</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sex</label>
+          <select class="form-control" id="c-sex" onchange="updateRisk()">
+            <option value="0">Female</option><option value="1" selected>Male</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">BMI &mdash; <span id="bmi-val" style="color:var(--teal)">28.0</span></label>
+          <input type="range" class="form-range" id="c-bmi" min="15" max="55" value="28" step="0.5" oninput="document.getElementById('bmi-val').textContent=parseFloat(this.value).toFixed(1);updateRisk()">
+          <div class="range-labels"><span>15 (underweight)</span><span>55 (obese)</span></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">General Health</label>
+          <select class="form-control" id="c-genhealth" onchange="updateRisk()">
+            <option value="0">Poor</option><option value="1">Fair</option><option value="2" selected>Good</option>
+            <option value="3">Very good</option><option value="4">Excellent</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Diabetic Status</label>
+          <select class="form-control" id="c-diabetic" onchange="updateRisk()">
+            <option value="0" selected>No</option><option value="1">Borderline / Gestational</option><option value="2">Yes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Poor Physical Health Days &mdash; <span id="ph-val" style="color:var(--teal)">0</span></label>
+          <input type="range" class="form-range" id="c-phys" min="0" max="30" value="0" oninput="document.getElementById('ph-val').textContent=this.value;updateRisk()">
+          <div class="range-labels"><span>0 days</span><span>30 days</span></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Poor Mental Health Days &mdash; <span id="mh-val" style="color:var(--teal)">0</span></label>
+          <input type="range" class="form-range" id="c-mental" min="0" max="30" value="0" oninput="document.getElementById('mh-val').textContent=this.value;updateRisk()">
+          <div class="range-labels"><span>0 days</span><span>30 days</span></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sleep Hours/Night &mdash; <span id="sl-val" style="color:var(--teal)">7</span></label>
+          <input type="range" class="form-range" id="c-sleep" min="1" max="24" value="7" oninput="document.getElementById('sl-val').textContent=this.value;updateRisk()">
+          <div class="range-labels"><span>1 hr</span><span>24 hrs</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="calc-card" style="margin-bottom:1rem">
+        <div class="calc-section-title">&#127973; Medical History &amp; Lifestyle</div>
+        <div class="toggle-row"><span class="toggle-label">Smoked &ge; 100 cigarettes lifetime</span><label class="toggle"><input type="checkbox" id="c-smoking" onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Heavy alcohol drinker</span><label class="toggle"><input type="checkbox" id="c-alcohol" onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Ever had a stroke</span><label class="toggle"><input type="checkbox" id="c-stroke" onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Difficulty walking or climbing stairs</span><label class="toggle"><input type="checkbox" id="c-walking" onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Exercise in past 30 days (outside work)</span><label class="toggle"><input type="checkbox" id="c-activity" checked onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Ever had asthma</span><label class="toggle"><input type="checkbox" id="c-asthma" onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Ever had kidney disease</span><label class="toggle"><input type="checkbox" id="c-kidney" onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Ever had skin cancer</span><label class="toggle"><input type="checkbox" id="c-skin" onchange="updateRisk()"><span class="toggle-slider"></span></label></div>
+      </div>
+      <div class="calc-result">
+        <div class="result-label">Estimated Risk Score</div>
+        <div class="result-gauge">
+          <svg class="gauge-svg" viewBox="0 0 140 140">
+            <circle class="gauge-bg" cx="70" cy="70" r="54"/>
+            <circle class="gauge-fill" id="gauge-circle" cx="70" cy="70" r="54" stroke-dasharray="339.3" stroke-dashoffset="339.3" stroke="#06b6d4"/>
+          </svg>
+          <div class="result-pct"><span class="result-num" id="risk-pct">0%</span><span class="result-unit">risk score</span></div>
+        </div>
+        <div class="result-risk" id="risk-label" style="color:var(--teal)">Calculating...</div>
+        <div class="result-msg" id="risk-msg">Adjust the sliders and toggles to see your estimated risk.</div>
+      </div>
+      <p class="disclaimer">&#9888; Educational purposes only. Not a medical device or diagnosis. Consult a qualified healthcare professional.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<section id="ethics" class="bg-white">
+<div class="inner">
+  <div class="sec-eyebrow">Ethics</div>
+  <h2>Responsible AI in healthcare</h2>
+  <p class="sec-lead">A model that makes health predictions carries serious responsibilities. We address five key ethical dimensions before any clinical deployment could be considered.</p>
+  <div class="ethics-grid">
+    <div class="ecrd"><span class="eicon">&#9878;</span><div class="etitle">Bias &amp; Fairness</div><div class="ebody">The dataset covers US respondents and includes race as a feature. Disparities in healthcare access across racial and socioeconomic groups may cause the model to perform differently for different subpopulations. Subgroup evaluation is required before any deployment (Barocas et al., 2019).</div></div>
+    <div class="ecrd"><span class="eicon">&#128203;</span><div class="etitle">Self-Reported Data Limitations</div><div class="ebody">Unlike clinical datasets, BRFSS uses telephone surveys. Respondents may under-report behaviours, have undiagnosed conditions, or recall inaccurately. This inherent noise limits model accuracy &mdash; a well-understood limitation of population health surveys.</div></div>
+    <div class="ecrd"><span class="eicon">&#128680;</span><div class="etitle">False Negatives Are Dangerous</div><div class="ebody">A false negative &mdash; predicting no disease when disease is present &mdash; could delay treatment. This is why we optimise for F1-score, use class_weight=balanced, and report disease recall separately. The threshold can be lowered to catch more sick patients.</div></div>
+    <div class="ecrd"><span class="eicon">&#128274;</span><div class="etitle">Privacy &mdash; GDPR &amp; HIPAA</div><div class="ebody">Any real deployment handles protected health data subject to EU GDPR (right to explanation, data minimisation) and US HIPAA (access controls, audit trails). The physician always makes the final call &mdash; this model is decision support only.</div></div>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<section class="bg-gray">
+<div class="inner">
+  <div class="sec-eyebrow">Team</div>
+  <h2>Project team</h2>
+  <p class="sec-lead">Hochschule Pforzheim &middot; BIS3012 &middot; Prof. Dr. Dustin van der Haar &middot; 2026</p>
+  <div class="tgrid">
+    <div class="tcrd"><div class="tavatar" style="background:linear-gradient(135deg,#0e7490,#0a1628)">K</div><div class="tname">Karim</div><div class="trole">Data Engineer</div></div>
+    <div class="tcrd"><div class="tavatar" style="background:linear-gradient(135deg,#7c3aed,#0a1628)">Ku</div><div class="tname">Kushul</div><div class="trole">Code Review &amp; QA</div></div>
+    <div class="tcrd"><div class="tavatar" style="background:linear-gradient(135deg,#dc2626,#0a1628)">T</div><div class="tname">Tarik</div><div class="trole">Presentation</div></div>
+    <div class="tcrd"><div class="tavatar" style="background:linear-gradient(135deg,#16a34a,#0a1628)">M</div><div class="tname">Max</div><div class="trole">Report &amp; Ethics</div></div>
+  </div>
+</div>
+</section>
+
+<footer>
+  <strong>CardioML &mdash; Heart Disease Classification</strong><br>
+  Hochschule Pforzheim &middot; BIS3012 &middot; Prof. Dr. Dustin van der Haar &middot; 2026<br>
+  Data: <a href="https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease">CDC BRFSS 2020</a> via Kaggle (Kamilpytlak, 2021) &middot; 319,795 US survey responses<br>
+  Methods: scikit-learn &middot; GridSearchCV &middot; 5-fold stratified CV &middot; class_weight=balanced<br>
+  <span style="font-size:11px;opacity:.5">&#9888; Educational purposes only. Not a medical device.</span>
+</footer>
+
+<script>
+Chart.defaults.font.family="'Inter',sans-serif";Chart.defaults.font.size=12;Chart.defaults.color='#64748b';
+const GREEN='#22c55e',RED='#ef4444',TEAL='#06b6d4',GRAY='#94a3b8',GRAY2='#64748b';
+new Chart(document.getElementById('distChart'),{type:'doughnut',data:{labels:['No Disease (91.4%)','Heart Disease (8.6%)'],datasets:[{data:[1882,177],backgroundColor:[GREEN,RED],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} patients`}}}}});
+new Chart(document.getElementById('ageChart'),{type:'line',data:{labels:['18-24','25-29','30-34','35-39','40-44','45-49','50-54','55-59','60-64','65-69','70-74','75-79','80+'],datasets:[{data:[0.6,1.2,1.5,2.1,3.2,4.8,7.1,10.3,14.2,18.5,23.1,27.4,31.6],borderColor:RED,backgroundColor:'rgba(239,68,68,0.1)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:RED,pointBorderColor:'white',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:45,font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{callback:v=>v+'%',font:{size:10}},min:0,max:35}}}});
+new Chart(document.getElementById('ghChart'),{type:'bar',data:{labels:['Poor','Fair','Good','Very good','Excellent'],datasets:[{data:[32.1,18.4,8.7,4.2,2.1],backgroundColor:['#dc2626','#ef4444','#f97316','#22c55e','#16a34a'],borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#f1f5f9'},ticks:{callback:v=>v+'%'},max:40}}}});
+new Chart(document.getElementById('riskChart'),{type:'bar',data:{labels:['Stroke','Diff Walking','Diabetic','Kidney Dis.','Asthma','Smoking'],datasets:[{label:'Has disease',data:[38.2,22.1,18.6,20.4,12.3,11.8],backgroundColor:RED,borderRadius:4,borderSkipped:false},{label:'No disease',data:[6.1,7.2,7.8,7.1,8.1,8.4],backgroundColor:GREEN,borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,barPercentage:.7,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:30,font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{callback:v=>v+'%'},max:50}}}});
+new Chart(document.getElementById('aucChart'),{type:'bar',data:{labels:['Logistic Reg.','SVM (RBF)','Random Forest'],datasets:[{data:[0.849,0.828,0.855],backgroundColor:[GRAY,GRAY2,TEAL],borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` AUC: ${c.raw}`}}},scales:{x:{min:0.78,max:0.88,grid:{color:'#f1f5f9'},ticks:{font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:11}}}}}});
+
+const COEF=[0.009235,0.054442,-0.155185,0.215526,0.115099,0.116517,0.213399,0.244443,0.748440,0.270822,0.024275,-0.265184,-0.002267,0.009303,0.020719,0.150170,-0.024204,-0.111174,-0.038031,0.046559,0.098466];
+const INTERCEPT=-0.7319;
+const MEAN=[28.273,0.431,0.069,0.032,3.321,3.907,0.137,0.486,6.587,0.301,0.783,2.562,7.107,0.123,0.039,0.097,0.026,0.063,0.086,0.041,0.770];
+const STD=[6.259,0.495,0.253,0.176,7.899,7.896,0.344,0.500,3.474,0.694,0.412,1.022,1.491,0.328,0.195,0.296,0.158,0.243,0.280,0.199,0.421];
+function sigmoid(x){return 1/(1+Math.exp(-x))}
+function updateRisk(){
+  const age=parseFloat(document.getElementById('c-age').value);
+  const sex=parseFloat(document.getElementById('c-sex').value);
+  const bmi=parseFloat(document.getElementById('c-bmi').value);
+  const gh=parseFloat(document.getElementById('c-genhealth').value);
+  const diab=parseFloat(document.getElementById('c-diabetic').value);
+  const phys=parseFloat(document.getElementById('c-phys').value);
+  const mental=parseFloat(document.getElementById('c-mental').value);
+  const sleep=parseFloat(document.getElementById('c-sleep').value);
+  const smoke=document.getElementById('c-smoking').checked?1:0;
+  const alc=document.getElementById('c-alcohol').checked?1:0;
+  const stroke=document.getElementById('c-stroke').checked?1:0;
+  const walk=document.getElementById('c-walking').checked?1:0;
+  const act=document.getElementById('c-activity').checked?1:0;
+  const asthma=document.getElementById('c-asthma').checked?1:0;
+  const kidney=document.getElementById('c-kidney').checked?1:0;
+  const skin=document.getElementById('c-skin').checked?1:0;
+  const feats=[bmi,smoke,alc,stroke,phys,mental,walk,sex,age,diab,act,gh,sleep,asthma,kidney,skin,0,0,0,0,1];
+  const scaled=feats.map((v,i)=>(v-MEAN[i])/STD[i]);
+  const z=scaled.reduce((sum,v,i)=>sum+v*COEF[i],INTERCEPT);
+  const prob=sigmoid(z);
+  const pct=(prob*100).toFixed(1);
+  const circ=339.3;
+  const offset=circ*(1-prob);
+  const color=prob<0.15?'#22c55e':prob<0.30?'#f59e0b':'#ef4444';
+  const gaugeEl=document.getElementById('gauge-circle');
+  gaugeEl.style.strokeDashoffset=offset;
+  gaugeEl.style.stroke=color;
+  document.getElementById('risk-pct').textContent=pct+'%';
+  let label,msg;
+  if(prob<0.10){label='&#x1F7E2; Low Risk';msg='Your profile is associated with a lower risk based on CDC population data. Maintain your current healthy habits.'}
+  else if(prob<0.20){label='&#x1F7E1; Moderate Risk';msg='Some risk factors detected. Consider discussing these with your doctor, especially lifestyle factors you can improve.'}
+  else if(prob<0.35){label='&#x1F7E0; Elevated Risk';msg='Multiple risk factors detected. We recommend speaking with a healthcare professional about preventive measures and screening.'}
+  else{label='&#x1F534; High Risk';msg='Significant risk factors present. Please consult a qualified physician for cardiovascular screening and advice.'}
+  document.getElementById('risk-label').innerHTML=label;
+  document.getElementById('risk-label').style.color=color;
+  document.getElementById('risk-msg').textContent=msg;
+}
+updateRisk();
+
+const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1});
+document.querySelectorAll('.scard,.ccrd,.mcrd,.ecrd,.tcrd,.fitem,.callout').forEach(el=>{el.classList.add('fade-in');observer.observe(el)});
+</script>
+</body>
+</html>
