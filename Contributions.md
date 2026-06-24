@@ -1,3 +1,4 @@
+
 # Team Contributions — Group 3
 
 **Project:** Heart Disease Prediction Using Machine Learning  
@@ -28,43 +29,48 @@ Because of all this, and because we were uploading from one machine on purpose, 
 
 **Karim — Data Engineer & Project Lead**
 
-Karim handled the technical side of the project. He built the full data pipeline, implemented all three models with GridSearchCV tuning, and wrote the technical sections of the report. He also built the interactive website on GitHub Pages which was used as the presentation tool. He managed the repository and all uploads throughout the project.
+Karim handled the technical implementation and repository management. He built the data pipeline, implemented the models, and managed all uploads. He also built the interactive website and wrote the technical sections of the report.
 
 - Jupyter notebook — full pipeline from data loading to evaluation
 - `src/preprocess.py`, `src/train.py`, `src/evaluate.py`
-- GridSearchCV for all 3 models with class_weight='balanced'
+- GridSearchCV tuning for all 3 models with class_weight='balanced'
 - Interactive website — risk calculator, model switcher, what-if simulator
-- Report sections 1–4 (Introduction, Methodology, Algorithm Selection, Results)
+- Report sections 1–4
 - Lab 12 deployment notebook
-- README and repository management
+- Repository setup, README, and all uploads
 
 **Kushul — Code Review & QA**
 
-Kushul went through the code and results each week to check everything was correct. He verified the confusion matrix, AUC scores, recall and precision numbers, and checked the feature encoding against the original CDC dataset. He also reviewed the report for technical accuracy and covered the introduction and data sections in the presentation.
+Kushul reviewed and tested all technical outputs each week. He went through the notebook, checked the results, and flagged anything that needed fixing. He also contributed to the preprocessing decisions and helped structure the methodology section of the report.
 
-- Notebook review and reproducibility testing
-- Verification of all evaluation metrics
+- Full notebook review and reproducibility testing
+- Verification of all evaluation metrics and confusion matrix
 - Encoding and stratified split validation
+- Contribution to preprocessing pipeline design
 - Technical review of report sections 1–2
-- Introduction and data presentation
+- Helped prepare and upload project files
 
 **Tarik — Presentation & Communication**
 
-Tarik was responsible for how the project was presented. He prepared the results narrative, organised the live demo walkthrough, and reviewed the website content. He also handled team communication and kept meetings on track throughout the semester.
+Tarik was responsible for the presentation and how the project was communicated externally. He designed the slide structure, prepared the website for live demo use, and handled team coordination throughout the semester. He also contributed to the repository by reviewing and uploading presentation materials.
 
 - Presentation structure and results narrative
 - Live demo walkthrough preparation
-- Website content review
-- Team meeting coordination
+- Website content review and feedback
+- Uploaded presentation files to the repository
+- Team meeting coordination and scheduling
+- Contributed to report review and formatting feedback
 
 **Max — Report & Ethics**
 
-Max owned the written quality of the report and the entire ethics section. He wrote all five ethical dimensions, the limitations section, and the conclusion. He also sourced all references and did a final proofread of the full report before submission.
+Max owned the written quality of the report. He wrote the full ethics section, the limitations section, and the conclusion. He also sourced all references, did the final proofread, and contributed to repository documentation.
 
 - Report sections 5–6 (Ethics and Conclusion)
 - All 11 academic references with DOIs
-- Limitations section
+- Limitations section (4.4)
 - Final report proofreading and formatting
+- Contributed to CONTRIBUTIONS.md and repository documentation
+- Reviewed and gave feedback on the README
 
 ---
 
@@ -72,16 +78,16 @@ Max owned the written quality of the report and the entire ethics section. He wr
 
 | Area | Karim | Kushul | Tarik | Max |
 |---|---|---|---|---|
-| Repository & uploads | ●●●●● | ●○○○○ | ○○○○○ | ○○○○○ |
-| Data pipeline & preprocessing | ●●●●● | ●●●○○ | ○○○○○ | ○○○○○ |
-| Model training & tuning | ●●●●● | ●●●○○ | ○○○○○ | ○○○○○ |
-| Metrics verification | ●●●●○ | ●●●●● | ○○○○○ | ○○○○○ |
-| Website & deployment | ●●●●● | ○○○○○ | ●●○○○ | ○○○○○ |
-| Report — technical (1–4) | ●●●●● | ●●○○○ | ○○○○○ | ○○○○○ |
-| Report — ethics & conclusion (5–6) | ○○○○○ | ○○○○○ | ○○○○○ | ●●●●● |
-| References & formatting | ●●○○○ | ●○○○○ | ○○○○○ | ●●●●● |
-| Presentation & communication | ●●○○○ | ●●○○○ | ●●●●● | ●●○○○ |
-| Code review | ●●○○○ | ●●●●● | ○○○○○ | ○○○○○ |
+| Repository & uploads | ●●●●● | ●●●○○ | ●●●○○ | ●●○○○ |
+| Data pipeline & preprocessing | ●●●●● | ●●●●○ | ●●○○○ | ●●○○○ |
+| Model training & tuning | ●●●●● | ●●●●○ | ●●○○○ | ●●○○○ |
+| Metrics verification | ●●●●○ | ●●●●● | ●●○○○ | ●●○○○ |
+| Website & deployment | ●●●●● | ●●○○○ | ●●●●○ | ●●○○○ |
+| Report — technical (1–4) | ●●●●● | ●●●○○ | ●●○○○ | ●●●○○ |
+| Report — ethics & conclusion (5–6) | ●●○○○ | ●●○○○ | ●●○○○ | ●●●●● |
+| References & formatting | ●●○○○ | ●●○○○ | ●●○○○ | ●●●●● |
+| Presentation & communication | ●●●○○ | ●●●○○ | ●●●●● | ●●●○○ |
+| Code review | ●●●○○ | ●●●●● | ●●○○○ | ●●○○○ |
 
 ---
 
